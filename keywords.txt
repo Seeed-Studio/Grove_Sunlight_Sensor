@@ -1,0 +1,28 @@
+  
+#######################################
+# Syntax Coloring Map For 
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+SI114X	KEYWORD2
+Begin	KEYWORD2
+Reset	KEYWORD2
+DeInit	KEYWORD2
+ReadParamData	KEYWORD2
+WriteParamData	KEYWORD2
+ReadVisible	KEYWORD2
+ReadIR	KEYWORD2
+ReadProximity	KEYWORD2
+ReadUV	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
