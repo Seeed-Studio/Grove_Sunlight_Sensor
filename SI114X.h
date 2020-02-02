@@ -1,8 +1,8 @@
 #ifndef _SI114X_H_
 #define _SI114X_H_
 #include "Arduino.h"
-/*------------------------------------------------------// 
-Registers,Parameters and commands
+/*  ------------------------------------------------------//
+    Registers,Parameters and commands
 
 */
 //
@@ -163,20 +163,20 @@ Registers,Parameters and commands
 
 
 class SI114X {
- public:
-  bool Begin(void);
-  void Reset(void);
-  void DeInit(void);
-  uint8_t  ReadParamData(uint8_t Reg);
-  uint8_t  WriteParamData(uint8_t Reg,uint8_t Value);
-  uint16_t ReadVisible(void);
-  uint16_t ReadIR(void);
-  uint16_t ReadProximity(uint8_t PSn);
-  uint16_t ReadUV(void);
- private:
-  void  WriteByte(uint8_t Reg, uint8_t Value);
-  uint8_t  ReadByte(uint8_t Reg);
-  uint16_t ReadHalfWord(uint8_t Reg);
+  public:
+    bool Begin(void);
+    void Reset(void);
+    void DeInit(void);
+    uint8_t  ReadParamData(uint8_t Reg);
+    uint8_t  WriteParamData(uint8_t Reg, uint8_t Value);
+    uint16_t ReadVisible(void);
+    uint16_t ReadIR(void);
+    uint16_t ReadProximity(uint8_t PSn);
+    uint16_t ReadUV(void);
+  private:
+    void  WriteByte(uint8_t Reg, uint8_t Value);
+    uint8_t  ReadByte(uint8_t Reg);
+    uint16_t ReadHalfWord(uint8_t Reg);
 };
 
 
