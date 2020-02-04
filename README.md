@@ -1,4 +1,4 @@
-# Grove_Sunlight_Sensor
+# Grove_Sunlight_Sensor  [![Build Status](https://travis-ci.com/Seeed-Studio/Grove_Sunlight_Sensor.svg?branch=master)](https://travis-ci.com/Seeed-Studio/Grove_Sunlight_Sensor)
 
 <img src=https://statics3.seeedstudio.com/images/product/101020089%201.jpg width=300><img src=https://statics3.seeedstudio.com/product/101020089%201_01.jpg width=300>
 
