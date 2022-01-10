@@ -130,6 +130,8 @@ class Si115X
 		int get_int_from_bytes(uint8_t *data, size_t len);
 		bool Begin(void);
 		uint16_t ReadHalfWord(void);
+		float ReadHalfWord_UV(void);
+		uint16_t ReadHalfWord_VISIBLE(void);
 		uint8_t ReadByte(uint8_t Reg);
 };
 

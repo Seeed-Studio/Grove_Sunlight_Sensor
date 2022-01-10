@@ -23,6 +23,11 @@ void setup()
  */
 void loop()
 {
+    Serial.print("IR: ");
     Serial.println(si1151.ReadHalfWord());
+    Serial.print("VISIBLE: ");
+    Serial.println(si1151.ReadHalfWord_VISIBLE());
+    Serial.print("UV: ");
+    Serial.println(si1151.ReadHalfWord_UV());
     delay(100);
 }

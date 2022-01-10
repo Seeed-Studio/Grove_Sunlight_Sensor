@@ -180,6 +180,22 @@ uint16_t Si115X::ReadHalfWord(void) {
     return data[0] * 256 + data[1]; //* 256 + data[1];
 }
 
+float Si115X::ReadHalfWord_UV(void) {
+    Si115X::send_command(Si115X::FORCE);
+    uint8_t data[3];
+    data[0] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_0, 1);
+    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
+    return ((data[0] * 256 + data[1])/3)*0.0012;
+}
+
+uint16_t Si115X::ReadHalfWord_VISIBLE(void) {
+    Si115X::send_command(Si115X::FORCE);
+    uint8_t data[3];
+    data[0] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_0, 1);
+    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
+    return (data[0] * 256 + data[1])/3; 
+}
+
 
 uint8_t Si115X::ReadByte(uint8_t Reg) {
     Wire.beginTransmission(Si115X::DEVICE_ADDRESS);
