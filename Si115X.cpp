@@ -8,6 +8,7 @@
 /**
  * Configures a channel at a given index
  */
+
 void Si115X::config_channel(uint8_t index, uint8_t *conf){
     int len = sizeof(conf);
   
@@ -133,6 +134,7 @@ int Si115X::get_int_from_bytes(uint8_t *data, size_t len){
 
 bool Si115X::Begin(void){
     Wire.begin();
+    // Wire.setClock(400000);
     if (ReadByte(0x00) != 0x51) {
         return false;
     }
@@ -155,6 +157,9 @@ bool Si115X::Begin(void){
 
     uint8_t conf[4];
 
+
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
+
     conf[0] = 0B00000000;
     conf[1] = 0B00000010, 
     conf[2] = 0B00000001;
@@ -166,9 +171,59 @@ bool Si115X::Begin(void){
     conf[2] = 0B00000001;
     conf[3] = 0B11000001;
     Si115X::config_channel(3, conf);
+
+#endif
+
+#if defined(TARGET_RP2040)
+
+    conf[0] = 0B00000000;
+    conf[1] = 0B00000010,
+    conf[2] = 0B01111000;
+    conf[3] = 0B11000000;
+    Si115X::config_channel(1, conf);
+
+    conf[0] = 0B00000000;
+    conf[1] = 0B00000011,
+    conf[2] = 0B01000000;
+    conf[3] = 0B11000000;
+    Si115X::config_channel(3, conf);
+
+#endif
+
     return true;
 
 }
+
+#if defined(TARGET_RP2040)
+
+uint16_t Si115X::ReadHalfWord(void) {
+    Si115X::send_command(Si115X::FORCE);
+    uint8_t data[3];
+    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
+    data[2] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_2, 1);
+
+    return data[2] * 256 + data[1]; //* 256 + data[1];
+}
+
+float Si115X::ReadHalfWord_UV(void) {
+    Si115X::send_command(Si115X::FORCE);
+    uint8_t data[3];
+    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
+    data[2] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_2, 1);
+    return ((data[2] * 256 + data[1])/3)*0.0012;
+}
+
+uint16_t Si115X::ReadHalfWord_VISIBLE(void) {
+    Si115X::send_command(Si115X::FORCE);
+    uint8_t data[3];
+    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
+    data[2] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_2, 1);
+    return (data[2] * 256 + data[1])/3; 
+}
+
+#endif
+
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
 
 uint16_t Si115X::ReadHalfWord(void) {
     Si115X::send_command(Si115X::FORCE);
@@ -196,6 +251,7 @@ uint16_t Si115X::ReadHalfWord_VISIBLE(void) {
     return (data[0] * 256 + data[1])/3; 
 }
 
+#endif
 
 uint8_t Si115X::ReadByte(uint8_t Reg) {
     Wire.beginTransmission(Si115X::DEVICE_ADDRESS);
@@ -204,4 +260,3 @@ uint8_t Si115X::ReadByte(uint8_t Reg) {
     Wire.requestFrom(Si115X::DEVICE_ADDRESS, 1);
     return Wire.read();
 }
-
