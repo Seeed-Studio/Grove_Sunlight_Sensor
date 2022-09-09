@@ -223,7 +223,7 @@ uint16_t Si115X::ReadHalfWord_VISIBLE(void) {
 
 #endif
 
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__)
+#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined(__SAMD51__)
 
 uint16_t Si115X::ReadHalfWord(void) {
     Si115X::send_command(Si115X::FORCE);
