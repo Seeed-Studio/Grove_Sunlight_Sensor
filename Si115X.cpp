@@ -174,7 +174,7 @@ bool Si115X::Begin(void){
 
 #endif
 
-#if defined(TARGET_RP2040)
+#if defined(TARGET_RP2040) || defined(NRF52840_XXAA)
 
     conf[0] = 0B00000000;
     conf[1] = 0B00000010,
@@ -194,7 +194,7 @@ bool Si115X::Begin(void){
 
 }
 
-#if defined(TARGET_RP2040)
+#if defined(TARGET_RP2040) || defined(NRF52840_XXAA)
 
 uint16_t Si115X::ReadHalfWord(void) {
     Si115X::send_command(Si115X::FORCE);
