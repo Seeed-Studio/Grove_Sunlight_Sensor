@@ -12,7 +12,7 @@
 void Si115X::config_channel(uint8_t index, uint8_t *conf){
     int len = sizeof(conf);
   
-    if(len != 4 || index < 0 || index > 5)
+    if(len != 4 || index > 5)
       return;
 
     int inc = index * len;
@@ -121,7 +121,7 @@ int Si115X::get_int_from_bytes(uint8_t *data, size_t len){
     int result = 0;
     int shift = 8 * len;
 	
-    for(int i = 0; i < len; i++){
+    for(size_t i = 0; i < len; i++){
         shift -= 8;
         result |= ((data[i] << shift) & (0xFF << shift));
     }
