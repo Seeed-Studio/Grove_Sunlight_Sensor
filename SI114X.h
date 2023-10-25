@@ -159,7 +159,7 @@
 #define SI114X_IRQEN_PS2 0x08
 #define SI114X_IRQEN_PS3 0x10
 
-#define SI114X_ADDR 0X60
+#define SI114X_ADDR 0X53
 
 
 class SI114X {
