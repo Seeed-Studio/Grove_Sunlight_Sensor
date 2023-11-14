@@ -138,9 +138,8 @@ bool Si115X::Begin(void){
     if (ReadByte(0x00) != 0x51) {
         return false;
     }
-    Si115X::send_command(Si115X::START);
 
-    Si115X::param_set(Si115X::CHAN_LIST, 0B000010);
+    Si115X::param_set(Si115X::CHAN_LIST, 0B001010); // enable channel 1 and 3
 
     Si115X::param_set(Si115X::MEASRATE_H, 0);
     Si115X::param_set(Si115X::MEASRATE_L, 1);  // 1 for a base period of 800 us
@@ -152,106 +151,38 @@ bool Si115X::Begin(void){
 
     Wire.beginTransmission(Si115X::DEVICE_ADDRESS);
     Wire.write(Si115X::IRQ_ENABLE);
-    Wire.write(0B000010);
+    Wire.write(0B001010); // enable channel 1 and 3
     Wire.endTransmission();
 
-    uint8_t conf[4];
+    uint8_t conf[4]; // ADCCONFIGx, ADCSENSx, ADCPOSTx, MEASCONFIGx
 
-
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined(__AVR_ATmega4809__)
-
-    conf[0] = 0B00000000;
-    conf[1] = 0B00000010, 
-    conf[2] = 0B00000001;
-    conf[3] = 0B11000001;
+    conf[0] = 0B00000000; // 1x Small IR
+    conf[1] = 0B00000010; // 48.8us Nominal Measurement time for 512 decimation rate
+    conf[2] = 0B00000001; // 16-bits output, Interrupt when the measurement is larger than THRESHOLD0
+    conf[3] = 0B11000001; // enable LED1, the time between measurements is 800*MEASRATE*MEASCOUNT2 us
     Si115X::config_channel(1, conf);
 
     conf[0] = 0B00000000;
-    conf[1] = 0B00000010, 
+    conf[1] = 0B00000010; 
     conf[2] = 0B00000001;
     conf[3] = 0B11000001;
     Si115X::config_channel(3, conf);
 
-#endif
-
-#if defined(TARGET_RP2040) || defined(NRF52840_XXAA)
-
-    conf[0] = 0B00000000;
-    conf[1] = 0B00000010,
-    conf[2] = 0B01111000;
-    conf[3] = 0B11000000;
-    Si115X::config_channel(1, conf);
-
-    conf[0] = 0B00000000;
-    conf[1] = 0B00000011,
-    conf[2] = 0B01000000;
-    conf[3] = 0B11000000;
-    Si115X::config_channel(3, conf);
-
-#endif
+    Si115X::send_command(Si115X::START);
 
     return true;
 
 }
 
-#if defined(TARGET_RP2040) || defined(NRF52840_XXAA)
-
-uint16_t Si115X::ReadHalfWord(void) {
+uint16_t Si115X::ReadAmbientLight(void) {
     Si115X::send_command(Si115X::FORCE);
-    uint8_t data[3];
-    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
-    data[2] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_2, 1);
+    uint8_t data[2];
+    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_0, 1);
+    data[2] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
 
-    return data[2] * 256 + data[1]; //* 256 + data[1];
+    return data[0] << 8 | data[1];
 }
 
-float Si115X::ReadHalfWord_UV(void) {
-    Si115X::send_command(Si115X::FORCE);
-    uint8_t data[3];
-    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
-    data[2] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_2, 1);
-    return ((data[2] * 256 + data[1])/3)*0.0012;
-}
-
-uint16_t Si115X::ReadHalfWord_VISIBLE(void) {
-    Si115X::send_command(Si115X::FORCE);
-    uint8_t data[3];
-    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
-    data[2] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_2, 1);
-    return (data[2] * 256 + data[1])/3; 
-}
-
-#endif
-
-#if defined(__AVR_ATmega168__) || defined(__AVR_ATmega328P__) || defined(__AVR_ATmega328__) || defined(__SAMD51__) || defined(__AVR_ATmega4809__)
-
-uint16_t Si115X::ReadHalfWord(void) {
-    Si115X::send_command(Si115X::FORCE);
-    uint8_t data[3];
-    data[0] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_0, 1);
-    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
-    // Si115X::send_command(Si115X::PAUSE);
-    // data[3] = data[0] * 256 + data[1];
-    return data[0] * 256 + data[1]; //* 256 + data[1];
-}
-
-float Si115X::ReadHalfWord_UV(void) {
-    Si115X::send_command(Si115X::FORCE);
-    uint8_t data[3];
-    data[0] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_0, 1);
-    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
-    return ((data[0] * 256 + data[1])/3)*0.0012;
-}
-
-uint16_t Si115X::ReadHalfWord_VISIBLE(void) {
-    Si115X::send_command(Si115X::FORCE);
-    uint8_t data[3];
-    data[0] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_0, 1);
-    data[1] = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::HOSTOUT_1, 1);
-    return (data[0] * 256 + data[1])/3; 
-}
-
-#endif
 
 uint8_t Si115X::ReadByte(uint8_t Reg) {
     Wire.beginTransmission(Si115X::DEVICE_ADDRESS);
