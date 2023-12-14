@@ -124,14 +124,29 @@ class Si115X
 		void config_channel(uint8_t index, uint8_t *conf);
 		void write_data(uint8_t addr, uint8_t *data, size_t len);
 		int read_register(uint8_t addr, uint8_t reg, int bytesOfData);
+		uint8_t read_register(uint8_t addr, uint8_t reg) {
+			return read_register(addr, reg, 1);
+		}
+		void write_register(uint8_t addr, uint8_t reg, uint8_t val) {
+			uint8_t data[2] = {reg, val};
+			write_data(addr, data, 2);
+		}
+
 		void param_set(uint8_t loc, uint8_t val);
 		int param_query(uint8_t loc);
 		void send_command(uint8_t code);
 		int get_int_from_bytes(uint8_t *data, size_t len);
 
-		bool Begin(void);
-		uint16_t ReadAmbientLight(void);
+		bool Begin(bool mode);
+		bool Begin(void) {
+			return Begin(false);
+		}
+		uint16_t ReadIR(void);
+		uint16_t ReadVisible(void);
 		uint8_t ReadByte(uint8_t Reg);
+
+	private:
+		bool is_autonomous;
 };
 
 #endif

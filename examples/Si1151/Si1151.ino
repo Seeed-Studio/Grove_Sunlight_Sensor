@@ -7,15 +7,18 @@ Si115X si1151;
  */
 void setup()
 {
-    uint8_t conf[4];
-
     Wire.begin();
     Serial.begin(115200);
-    if (!si1151.Begin())
+    if (!si1151.Begin()) {
         Serial.println("Si1151 is not ready!");
-    else
+        while (1) {
+            delay(1000);
+            Serial.print(".");
+        };
+    }
+    else {
         Serial.println("Si1151 is ready!");
-
+    }
 }
 
 /**
@@ -23,7 +26,10 @@ void setup()
  */
 void loop()
 {
-    Serial.print("Ambient Light: ");
-    Serial.println(si1151.ReadHalfWord());
-    delay(100);
+    Serial.print("IR: ");
+    Serial.println(si1151.ReadIR());
+    Serial.print("Visible: ");
+    Serial.println(si1151.ReadVisible());
+
+    delay(500);
 }
