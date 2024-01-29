@@ -192,7 +192,6 @@ bool Si115X::Begin(bool mode){
         conf[2] = 0B00000001; // 16-bits output, Interrupt when the measurement is larger than THRESHOLD0
         conf[3] = 0B10001001; // enable LED1B, the time between measurements is 800*MEASRATE*MEASCOUNT1 us
         config_channel(1, conf);
-        send_command(START);
     }
     else {
         param_set(ADCCONFIG_0, 0B01100000);
@@ -202,6 +201,7 @@ bool Si115X::Begin(bool mode){
         param_set(MEASCONFIG_1, 0x00);
         param_set(ADCPOST_1, 0x00);
     }
+    send_command(START);
 
     return true;
 

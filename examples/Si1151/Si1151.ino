@@ -7,7 +7,6 @@ Si115X si1151;
  */
 void setup()
 {
-    Wire.begin();
     Serial.begin(115200);
     if (!si1151.Begin()) {
         Serial.println("Si1151 is not ready!");
