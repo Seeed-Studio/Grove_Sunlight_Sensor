@@ -120,7 +120,7 @@ class Si115X
 			BURST = 0x2B			
 		} ParameterAddress;
 		
-		// Si115X();
+		Si115X(uint8_t addr = DEVICE_ADDRESS);
 		void config_channel(uint8_t index, uint8_t *conf);
 		void write_data(uint8_t addr, uint8_t *data, size_t len);
 		int read_register(uint8_t addr, uint8_t reg, int bytesOfData);
@@ -147,6 +147,7 @@ class Si115X
 
 	private:
 		bool is_autonomous;
+		uint8_t device_address;
 };
 
 #endif

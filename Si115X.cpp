@@ -1,9 +1,9 @@
 #include <Arduino.h>
 #include "Si115X.h"
 
-// Si115X::Si115X() {
-// 	//empty constructor
-// }
+Si115X::Si115X(uint8_t addr) {
+    device_address = addr;
+}
 
 /**
  * Configures a channel at a given index
@@ -63,7 +63,7 @@ int Si115X::read_register(uint8_t addr, uint8_t reg, int bytesOfData){
     int val = -1;
   
     Si115X::write_data(addr, &reg, sizeof(reg));
-    Wire.requestFrom(addr, bytesOfData);
+    Wire.requestFrom(addr, (uint8_t)bytesOfData);
   
     if(Wire.available())
       val = Wire.read();
@@ -80,17 +80,17 @@ void Si115X::param_set(uint8_t loc, uint8_t val){
     int cmmnd_ctr;
 
     do {
-        cmmnd_ctr = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::RESPONSE_0, 1);
+        cmmnd_ctr = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);
       
         packet[0] = Si115X::HOSTIN_0;
         packet[1] = val;
-        Si115X::write_data(Si115X::DEVICE_ADDRESS, packet, sizeof(packet));
+        Si115X::write_data(device_address, packet, sizeof(packet));
       
         packet[0] = Si115X::COMMAND;
         packet[1] = loc | (0B10 << 6);
-        Si115X::write_data(Si115X::DEVICE_ADDRESS, packet, sizeof(packet));
+        Si115X::write_data(device_address, packet, sizeof(packet));
       
-        r = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::RESPONSE_0, 1);	    
+        r = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);	    
     } while(r > cmmnd_ctr); 
 }
 
@@ -104,17 +104,17 @@ int Si115X::param_query(uint8_t loc){
     int cmmnd_ctr;
 
     do {
-        cmmnd_ctr = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::RESPONSE_0, 1);
+        cmmnd_ctr = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);
 	    
         packet[0] = Si115X::COMMAND;
         packet[1] = loc | (0B01 << 6);
 	    
-        Si115X::write_data(Si115X::DEVICE_ADDRESS, packet, sizeof(packet));
+        Si115X::write_data(device_address, packet, sizeof(packet));
 	    
-        r = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::RESPONSE_0, 1);
+        r = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);
     } while(r > cmmnd_ctr);
 	
-    result = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::RESPONSE_1, 1);
+    result = Si115X::read_register(device_address, Si115X::RESPONSE_1, 1);
 	
     return result;
 }
@@ -127,14 +127,14 @@ void Si115X::send_command(uint8_t code){
     int r;
     int cmmnd_ctr;
     do {
-        cmmnd_ctr = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::RESPONSE_0, 1);
+        cmmnd_ctr = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);
 	    
         packet[0] = Si115X::COMMAND;
         packet[1] = code;
 	    
-        Si115X::write_data(Si115X::DEVICE_ADDRESS, packet, sizeof(packet));
+        Si115X::write_data(device_address, packet, sizeof(packet));
 	    
-        r = Si115X::read_register(Si115X::DEVICE_ADDRESS, Si115X::RESPONSE_0, 1); 
+        r = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1); 
     } while(r > cmmnd_ctr);
 }
 
@@ -168,7 +168,7 @@ bool Si115X::Begin(bool mode){
     // Enable 2 channels for proximity measurement
     param_set(CHAN_LIST, 0B000011);
     // Enable Interrupt
-    write_register(DEVICE_ADDRESS, IRQ_ENABLE, 0B000011);
+    write_register(device_address, IRQ_ENABLE, 0B000011);
     // Initialize LED current
     param_set(LED1_A, 0x3F);
     param_set(LED1_B, 0x3F);
@@ -210,23 +210,23 @@ bool Si115X::Begin(bool mode){
 uint16_t Si115X::ReadIR(void) {
     if (!is_autonomous) send_command(FORCE);
     uint8_t data[2];
-    data[0] = read_register(DEVICE_ADDRESS, HOSTOUT_0);
-    data[1] = read_register(DEVICE_ADDRESS, HOSTOUT_1);
+    data[0] = read_register(device_address, HOSTOUT_0);
+    data[1] = read_register(device_address, HOSTOUT_1);
     return (data[0] << 8) + data[1];
 }
 
 uint16_t Si115X::ReadVisible(void) {
     if (!is_autonomous) send_command(FORCE);
     uint8_t data[2];
-    data[0] = read_register(DEVICE_ADDRESS, HOSTOUT_2);
-    data[1] = read_register(DEVICE_ADDRESS, HOSTOUT_3);
+    data[0] = read_register(device_address, HOSTOUT_2);
+    data[1] = read_register(device_address, HOSTOUT_3);
     return (data[0] << 8) + data[1];
 }
 
 uint8_t Si115X::ReadByte(uint8_t Reg) {
-    Wire.beginTransmission(DEVICE_ADDRESS);
+    Wire.beginTransmission(device_address);
     Wire.write(Reg);
     Wire.endTransmission();
-    Wire.requestFrom(DEVICE_ADDRESS, 1);
+    Wire.requestFrom(device_address, (uint8_t)1);
     return Wire.read();
 }
