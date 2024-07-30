@@ -16,7 +16,9 @@ class Si115X
 			RESET_SW = 0x01,
 			FORCE = 0x11,
 			PAUSE = 0x12,
-			START = 0x13
+			START = 0x13,
+			PARAM_QUERY = 0x40,
+			PARAM_SET = 0x80
 		} CommandCodes;
 		
 		typedef enum {	
@@ -27,13 +29,12 @@ class Si115X
 			INFO_1 = 0x04,
 			HOSTIN_3 = 0x07,
 			HOSTIN_2 = 0x08,
-	
+			HOSTIN_1 = 0x09,
 			HOSTIN_0 = 0x0A,
 			COMMAND = 0x0B,
 			IRQ_ENABLE = 0x0F,
-			RESPONSE_0 = 0x11,
 			RESPONSE_1 = 0x10,
-			
+			RESPONSE_0 = 0x11,
 			IRQ_STATUS = 0x12,
 			HOSTOUT_0 = 0x13,
 			HOSTOUT_1 = 0x14,
@@ -105,19 +106,20 @@ class Si115X
 			
 			LED1_A = 0x1F,
 			LED1_B = 0x20,
-			LED2_A = 0x21,
-			LED2_B = 0x22,
-			LED3_A = 0x23,
-			LED3_B = 0x24,
+			LED3_A = 0x21,
+			LED3_B = 0x22,
+			LED2_A = 0x23,
+			LED2_B = 0x24,
 
 			THRESHOLD0_H = 0x25,
 			THRESHOLD0_L = 0x26,
 			THRESHOLD1_H = 0x27,
 			THRESHOLD1_L = 0x28,
-			THRESHOLD2_H = 0x29,
-			THRESHOLD2_L = 0x2A,
-
-			BURST = 0x2B			
+			UPPER_THRESHOLD_H = 0x29,
+			UPPER_THRESHOLD_L = 0x2A,
+			BURST = 0x2B,
+			LOWER_THRESHOLD_H = 0x2C,
+			LOWER_THRESHOLD_L = 0x2D
 		} ParameterAddress;
 		
 		Si115X(uint8_t addr = DEVICE_ADDRESS);
