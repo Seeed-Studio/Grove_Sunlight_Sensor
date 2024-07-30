@@ -9,7 +9,7 @@ Si115X::Si115X(uint8_t addr) {
  * Configures a channel at a given index
  */
 
-void Si115X::config_channel(uint8_t index, uint8_t *conf){
+void Si115X::config_channel(uint8_t index, const uint8_t *conf){
     int len = sizeof(conf);
   
     if(len != 4 || index > 5)
@@ -50,7 +50,7 @@ void Si115X::config_channel(uint8_t index, uint8_t *conf){
 /**
  * Writes data over i2c
  */
-void Si115X::write_data(uint8_t addr, uint8_t *data, size_t len){
+void Si115X::write_data(uint8_t addr, const uint8_t *data, size_t len){
     Wire.beginTransmission(addr);
     Wire.write(data, len);
     Wire.endTransmission();
@@ -141,7 +141,7 @@ void Si115X::send_command(uint8_t code){
 /**
  * Returns int given a byte array
  */
-int Si115X::get_int_from_bytes(uint8_t *data, size_t len){
+int Si115X::get_int_from_bytes(const uint8_t *data, size_t len){
     int result = 0;
     int shift = 8 * len;
 	
