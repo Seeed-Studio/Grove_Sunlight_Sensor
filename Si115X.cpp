@@ -75,67 +75,71 @@ int Si115X::read_register(uint8_t addr, uint8_t reg, int bytesOfData){
  * param set as shown in the datasheet
  */
 void Si115X::param_set(uint8_t loc, uint8_t val){
-    uint8_t packet[2];
-    int r;
-    int cmmnd_ctr;
+    const auto preResponse0 = read_register(device_address, RESPONSE_0);
 
-    do {
-        cmmnd_ctr = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);
-      
-        packet[0] = Si115X::HOSTIN_0;
-        packet[1] = val;
-        Si115X::write_data(device_address, packet, sizeof(packet));
-      
-        packet[0] = Si115X::COMMAND;
-        packet[1] = loc | (0B10 << 6);
-        Si115X::write_data(device_address, packet, sizeof(packet));
-      
-        r = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);	    
-    } while(r > cmmnd_ctr); 
+    uint8_t packet[2];
+    packet[0] = HOSTIN_0;
+    packet[1] = val;
+    write_data(device_address, packet, sizeof(packet));
+    packet[0] = COMMAND;
+    packet[1] = loc | PARAM_SET;
+    write_data(device_address, packet, sizeof(packet));
+
+    while ((read_register(device_address, RESPONSE_0) & 0x0f) != ((preResponse0 + 1) & 0x0f))
+    {
+        yield();
+    }
 }
 
 /**
  * param query as shown in the datasheet
  */
 int Si115X::param_query(uint8_t loc){
-    int result = -1;
-    uint8_t packet[2];
-    int r;
-    int cmmnd_ctr;
+    const auto preResponse0 = read_register(device_address, RESPONSE_0);
 
-    do {
-        cmmnd_ctr = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);
-	    
-        packet[0] = Si115X::COMMAND;
-        packet[1] = loc | (0B01 << 6);
-	    
-        Si115X::write_data(device_address, packet, sizeof(packet));
-	    
-        r = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);
-    } while(r > cmmnd_ctr);
-	
-    result = Si115X::read_register(device_address, Si115X::RESPONSE_1, 1);
-	
-    return result;
+    uint8_t packet[2];
+    packet[0] = COMMAND;
+    packet[1] = loc | PARAM_QUERY;
+    write_data(device_address, packet, sizeof(packet));
+
+    while ((read_register(device_address, RESPONSE_0) & 0x0f) != ((preResponse0 + 1) & 0x0f))
+    {
+        yield();
+    }
+
+    return read_register(device_address, RESPONSE_1);
 }
 
 /**
  * Sends command to the command register
  */
-void Si115X::send_command(uint8_t code){
+uint8_t Si115X::send_command(uint8_t code){
+    const auto preResponse0 = read_register(device_address, RESPONSE_0);
+
     uint8_t packet[2];
-    int r;
-    int cmmnd_ctr;
-    do {
-        cmmnd_ctr = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1);
-	    
-        packet[0] = Si115X::COMMAND;
-        packet[1] = code;
-	    
-        Si115X::write_data(device_address, packet, sizeof(packet));
-	    
-        r = Si115X::read_register(device_address, Si115X::RESPONSE_0, 1); 
-    } while(r > cmmnd_ctr);
+    packet[0] = COMMAND;
+    packet[1] = code;
+    write_data(device_address, packet, sizeof(packet));
+
+    while (true)
+    {
+        const auto response = read_register(device_address, RESPONSE_0);
+        if (response & 0x10)
+        {
+            // CMD_ERR
+            packet[0] = COMMAND;
+            packet[1] = RESET_CMD_CTR;
+            write_data(device_address, packet, sizeof(packet));
+            return response;
+        }
+        else if ((response & 0x0f) == ((preResponse0 + 1) & 0x0f))
+        {
+            break;
+        }
+        yield();
+    }
+
+    return 0;
 }
 
 /**
@@ -165,6 +169,18 @@ bool Si115X::Begin(bool mode){
         return false;
     }
 
+    // Reset
+    uint8_t packet[2];
+    packet[0] = COMMAND;
+    packet[1] = RESET_SW;
+    write_data(device_address, packet, sizeof(packet));
+
+    // Wait for the reset to complete
+    while (read_register(device_address, RESPONSE_0) != 0x2f)
+    {
+        yield();
+    }
+
     // Enable 2 channels for proximity measurement
     param_set(CHAN_LIST, 0B000011);
     // Enable Interrupt
@@ -187,24 +203,26 @@ bool Si115X::Begin(bool mode){
         conf[2] = 0B00000001; // 16-bits output, Interrupt when the measurement is larger than THRESHOLD0
         conf[3] = 0B01000001; // enable LED1A, the time between measurements is 800*MEASRATE*MEASCOUNT0 us
         config_channel(0, conf);
-        conf[0] = 0B01101101; // 1x Visible
+        conf[0] = 0B01101011; // 1x Visible
         conf[1] = 0B00000010; // 48.8us Nominal Measurement time for 512 decimation rate
         conf[2] = 0B00000001; // 16-bits output, Interrupt when the measurement is larger than THRESHOLD0
         conf[3] = 0B10001001; // enable LED1B, the time between measurements is 800*MEASRATE*MEASCOUNT1 us
         config_channel(1, conf);
+
+        send_command(START);
     }
     else {
-        param_set(ADCCONFIG_0, 0B01100000);
-        param_set(MEASCONFIG_0, 0x00);
-        param_set(ADCPOST_0, 0x00);
-        param_set(ADCCONFIG_1, 0B01101101);
-        param_set(MEASCONFIG_1, 0x00);
-        param_set(ADCPOST_1, 0x00);
+        param_set(ADCCONFIG_0, 0b00000000); // 1x Small IR
+        param_set(ADCSENS_0, 0b10000000);   // Enables the high signal range
+        param_set(ADCPOST_0, 0b00000000);
+        param_set(MEASCONFIG_0, 0b00000000);
+        param_set(ADCCONFIG_1, 0b00001011); // 1x Visible
+        param_set(ADCSENS_1, 0b10000000);   // Enables the high signal range
+        param_set(ADCPOST_1, 0b00000000);
+        param_set(MEASCONFIG_1, 0b00000000);
     }
-    send_command(START);
 
     return true;
-
 }
 
 uint16_t Si115X::ReadIR(void) {

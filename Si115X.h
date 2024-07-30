@@ -136,7 +136,7 @@ class Si115X
 
 		void param_set(uint8_t loc, uint8_t val);
 		int param_query(uint8_t loc);
-		void send_command(uint8_t code);
+		uint8_t send_command(uint8_t code);
 		int get_int_from_bytes(const uint8_t *data, size_t len);
 
 		bool Begin(bool mode);
